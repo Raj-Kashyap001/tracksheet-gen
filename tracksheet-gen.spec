@@ -4,12 +4,12 @@ a = Analysis(
     ['gen_tracksheet_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets/icon.svg', 'assets')],
+    datas=[('assets/index.html', 'assets'), ('assets/icon.svg', 'assets')],
     hiddenimports=['gen_tracksheet'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['gi', 'gi.repository', 'Gtk', 'Adw', 'Gio', 'GLib'],
     noarchive=False,
 )
 
