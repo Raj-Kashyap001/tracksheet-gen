@@ -84,44 +84,8 @@ jobs:
           name: windows
           path: tracksheet-gen-windows.zip
 
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Generate icons
-        run: |
-          pip install cairosvg
-          python -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=256, output_height=256)"
-          sips -s format icns assets/icon.png --out assets/icon.icns
-
-      - name: Install deps
-        run: pip install pyinstaller pandas openpyxl pywebview pyobjc
-
-      - name: Build with PyInstaller
-        run: |
-          pyinstaller --onefile --windowed \
-            --name tracksheet-gen \
-            --icon assets/icon.icns \
-            --add-data "assets/index.html:assets" \
-            --add-data "assets/icon.png:assets" \
-            --hidden-import gen_tracksheet \
-            gen_tracksheet_gui.py
-
-      - name: Package
-        run: tar -czf tracksheet-gen-macos.tar.gz -C dist tracksheet-gen
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: tracksheet-gen-macos.tar.gz
-
   release:
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -133,4 +97,3 @@ jobs:
           files: |
             linux/tracksheet-gen-linux.tar.gz
             windows/tracksheet-gen-windows.zip
-            macos/tracksheet-gen-macos.tar.gz
