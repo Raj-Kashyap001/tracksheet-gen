@@ -25,7 +25,7 @@ jobs:
             pkg-config libgirepository1.0-dev \
             libcairo2-dev
 
-      - name: Setup Python venv with deps
+      - name: Setup venv with system GTK + pip packages
         run: |
           python3 -m venv --system-site-packages .venv
           .venv/bin/pip install pyinstaller pandas openpyxl
@@ -39,31 +39,12 @@ jobs:
             gen_tracksheet_gui.py
 
       - name: Package
-        run: |
-          tar -czf tracksheet-gen-linux.tar.gz -C dist tracksheet-gen
+        run: tar -czf tracksheet-gen-linux.tar.gz -C dist tracksheet-gen
 
       - uses: actions/upload-artifact@v4
         with:
           name: linux
           path: tracksheet-gen-linux.tar.gz
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install deps
-        run: pip install pyinstaller pandas openpyxl
-
-      - name: Note
-        run: |
-          echo "GTK4+PyGObject is not available on Windows via pip."
-          echo "Windows build requires MSYS2 GTK4 or alternative GUI."
-          echo "Skipping Windows build for now."
 
   release:
     needs: [build-linux]
