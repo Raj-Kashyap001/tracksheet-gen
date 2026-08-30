@@ -4,237 +4,350 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tracksheet Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #1a1a2e;
-    --surface: #16213e;
-    --surface2: #0f3460;
-    --accent: #e94560;
-    --accent2: #533483;
-    --text: #eee;
-    --text-dim: #8892a4;
-    --radius: 10px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.3);
+    --md-sys-color-background: #1c1b1f;
+    --md-sys-color-surface: #1c1b1f;
+    --md-sys-color-surface-dim: #141316;
+    --md-sys-color-surface-container: #211f26;
+    --md-sys-color-surface-container-high: #2b2930;
+    --md-sys-color-surface-container-highest: #36343b;
+    --md-sys-color-on-surface: #e6e1e5;
+    --md-sys-color-on-surface-variant: #cac4d0;
+    --md-sys-color-outline: #938f99;
+    --md-sys-color-outline-variant: #49454f;
+    --md-sys-color-primary: #d0bcff;
+    --md-sys-color-on-primary: #381e72;
+    --md-sys-color-primary-container: #4f378b;
+    --md-sys-color-on-primary-container: #eaddff;
+    --md-sys-color-error: #f2b8b5;
+    --md-sys-color-on-error: #601410;
+    --md-sys-color-error-container: #8c1d18;
+    --md-sys-color-inverse-surface: #e6e1e5;
+    --md-sys-color-inverse-on-surface: #322f35;
+    --md-sys-shape-corner-xl: 28px;
+    --md-sys-shape-corner-lg: 16px;
+    --md-sys-shape-corner-md: 12px;
+    --md-sys-shape-corner-sm: 8px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: 'Roboto', sans-serif;
+    background: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-surface);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
   }
-  .container { width: 100%; max-width: 560px; }
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 4px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .container { width: 100%; max-width: 520px; }
+
+  /* ── Top app bar ──────────────────────────────────────────────── */
+  .top-bar {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-bottom: 8px;
   }
   .subtitle {
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 13px;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
     margin-bottom: 24px;
+    line-height: 20px;
   }
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 20px;
+
+  /* ── Drop zone ────────────────────────────────────────────────── */
+  .drop-zone {
+    border: 2px dashed var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-xl);
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-bottom: 16px;
+    background: var(--md-sys-color-surface-container);
+  }
+  .drop-zone:hover {
+    border-color: var(--md-sys-color-outline);
+    background: var(--md-sys-color-surface-container-high);
+  }
+  .drop-zone.drag-over {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+  }
+  .drop-zone-icon {
+    font-size: 32px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 8px;
+  }
+  .drop-zone-text {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 20px;
+  }
+  .drop-zone-text strong {
+    color: var(--md-sys-color-primary);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .drop-zone-hint {
+    font-size: 12px;
+    color: var(--md-sys-color-outline);
+    margin-top: 4px;
+  }
+
+  /* ── File list ────────────────────────────────────────────────── */
+  .file-card {
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-xl);
+    overflow: hidden;
     margin-bottom: 16px;
   }
-  .file-list {
-    min-height: 160px;
-    max-height: 260px;
-    overflow-y: auto;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    background: rgba(0,0,0,0.2);
+  .file-header {
+    padding: 16px 20px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
   }
-  .file-list:empty::after {
-    content: 'No files added';
-    display: block;
-    text-align: center;
-    padding: 48px 0;
-    color: var(--text-dim);
-    font-size: 13px;
+  .file-list {
+    max-height: 220px;
+    overflow-y: auto;
   }
   .file-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 14px;
-    cursor: default;
+    padding: 12px 20px;
+    gap: 12px;
     transition: background 0.15s;
   }
-  .file-item:hover { background: rgba(255,255,255,0.04); }
-  .file-item:last-child { border-bottom: none; }
-  .file-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .file-item .remove {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0 4px;
-    line-height: 1;
-    transition: color 0.15s;
+  .file-item:hover { background: var(--md-sys-color-surface-container-high); }
+  .file-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--md-sys-shape-corner-sm);
+    background: var(--md-sys-color-primary-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    color: var(--md-sys-color-on-primary-container);
   }
-  .file-item .remove:hover { color: var(--accent); }
-  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
-  .btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex: 1;
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 14px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .btn-secondary {
-    background: rgba(255,255,255,0.08);
-    color: var(--text);
-  }
-  .btn-secondary:hover { background: rgba(255,255,255,0.14); }
-  .btn-danger {
-    background: rgba(233,69,96,0.15);
-    color: var(--accent);
-  }
-  .btn-danger:hover { background: rgba(233,69,96,0.25); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    padding: 14px;
-    font-size: 15px;
-    width: 100%;
-    flex: none;
-  }
-  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .status {
-    text-align: center;
-    color: var(--text-dim);
+  .file-meta {
     font-size: 12px;
-    margin-top: 12px;
+    color: var(--md-sys-color-outline);
+    margin-top: 2px;
   }
-  .toast {
+  .file-remove {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .file-remove:hover {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-error);
+  }
+
+  /* ── Filled button ────────────────────────────────────────────── */
+  .btn-filled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 24px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-xl);
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  .btn-filled:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .btn-filled:disabled {
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-outline);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* ── Text button ──────────────────────────────────────────────── */
+  .btn-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-sm);
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-text:hover { background: rgba(208, 188, 255, 0.08); }
+
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Snackbar ─────────────────────────────────────────────────── */
+  .snackbar {
     position: fixed;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: var(--surface2);
-    color: var(--text);
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 13px;
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease;
+    background: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
+    padding: 14px 16px;
+    border-radius: var(--md-sys-shape-corner-sm);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.25s ease;
     z-index: 999;
-    pointer-events: none;
+    min-width: 280px;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--accent); }
-  .toast.success { background: #2ecc71; color: #fff; }
+  .snackbar.show { transform: translateX(-50%) translateY(0); }
+  .snackbar.error { background: var(--md-sys-color-error-container); color: var(--md-sys-color-error); }
+  .snackbar .snack-text { flex: 1; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Tracksheet Generator</h1>
-  <p class="subtitle">Select CSV job order reports to generate tracksheets</p>
+  <div class="top-bar">Tracksheet Generator</div>
+  <div class="subtitle">Drop CSV job order reports or browse to add files</div>
 
-  <div class="card">
-    <div class="file-list" id="fileList"></div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="addFiles()">+ Add CSV Files</button>
-      <button class="btn btn-secondary" onclick="removeSelected()">Remove Selected</button>
-      <button class="btn btn-danger" onclick="clearAll()">Clear</button>
-    </div>
+  <div class="drop-zone" id="dropZone" onclick="addFiles()">
+    <div class="drop-zone-icon">&#128193;</div>
+    <div class="drop-zone-text">Drag CSV files here or <strong>browse</strong></div>
+    <div class="drop-zone-hint">Supports multiple files</div>
   </div>
 
-  <button class="btn btn-primary" id="genBtn" onclick="generate()">Generate Tracksheets</button>
-  <p class="status" id="status">No files selected</p>
+  <div class="btn-row">
+    <button class="btn-text" onclick="clearAll()">Clear all</button>
+  </div>
+
+  <div class="file-card" id="fileCard" style="display:none">
+    <div class="file-header">Selected files</div>
+    <div class="file-list" id="fileList"></div>
+  </div>
+
+  <button class="btn-filled" id="genBtn" onclick="generate()">Generate Tracksheets</button>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="snackbar" id="snackbar">
+  <span class="snack-text" id="snackText"></span>
+</div>
 
 <script>
   let files = [];
-  let selectedIndex = -1;
 
   function render() {
+    const card = document.getElementById('fileCard');
     const list = document.getElementById('fileList');
+    if (!files.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
     list.innerHTML = '';
     files.forEach((f, i) => {
-      const div = document.createElement('div');
-      div.className = 'file-item' + (i === selectedIndex ? ' selected' : '');
-      div.innerHTML = `<span class="name">${f.name}</span><button class="remove" onclick="event.stopPropagation();removeAt(${i})">&times;</button>`;
-      div.onclick = () => { selectedIndex = i; render(); };
-      list.appendChild(div);
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `
+        <div class="file-icon">CSV</div>
+        <div class="file-info">
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">${f.path.split(/[/\\]/).slice(-2, -1)[0] || ''}</div>
+        </div>
+        <button class="file-remove" onclick="removeAt(${i})">&times;</button>`;
+      list.appendChild(item);
     });
-    document.getElementById('status').textContent = files.length
-      ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
-      : 'No files selected';
   }
 
+  /* ── Drag and drop ────────────────────────────────────────────── */
+  const dropZone = document.getElementById('dropZone');
+  ['dragenter', 'dragover'].forEach(e => {
+    dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+  });
+  ['dragleave', 'drop'].forEach(e => {
+    dropZone.addEventListener(e, () => dropZone.classList.remove('drag-over'));
+  });
+  dropZone.addEventListener('drop', (ev) => {
+    ev.preventDefault();
+    const dropped = Array.from(ev.dataTransfer.files)
+      .filter(f => f.name.endsWith('.csv'))
+      .map(f => ({ name: f.name, path: f.path || f.name }));
+    dropped.forEach(p => {
+      if (!files.find(f => f.path === p.path)) files.push(p);
+    });
+    render();
+    if (dropped.length) showSnackbar(`${dropped.length} file(s) added`);
+  });
+
+  /* ── API calls ────────────────────────────────────────────────── */
   async function addFiles() {
     const paths = await window.pywebview.api.add_files();
     if (paths) {
-      paths.forEach(p => {
-        if (!files.find(f => f.path === p.path)) files.push(p);
-      });
-      selectedIndex = -1;
+      paths.forEach(p => { if (!files.find(f => f.path === p.path)) files.push(p); });
       render();
     }
   }
 
-  function removeAt(i) {
-    files.splice(i, 1);
-    if (selectedIndex >= files.length) selectedIndex = -1;
-    render();
-  }
+  function removeAt(i) { files.splice(i, 1); render(); }
+  function clearAll() { files = []; render(); }
 
-  function removeSelected() {
-    if (selectedIndex >= 0) removeAt(selectedIndex);
-  }
-
-  function clearAll() {
-    files = [];
-    selectedIndex = -1;
-    render();
-  }
-
-  function showToast(msg, type = '') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    setTimeout(() => t.className = 'toast', 3000);
+  function showSnackbar(msg, isError) {
+    const s = document.getElementById('snackbar');
+    document.getElementById('snackText').textContent = msg;
+    s.className = 'snackbar show' + (isError ? ' error' : '');
+    setTimeout(() => s.className = 'snackbar', 3000);
   }
 
   async function generate() {
-    if (!files.length) { showToast('Please add CSV files first', 'error'); return; }
+    if (!files.length) { showSnackbar('Add CSV files first', true); return; }
     const btn = document.getElementById('genBtn');
     btn.disabled = true;
-    btn.textContent = 'Generating...';
-
+    btn.textContent = 'Generating\u2026';
     const result = await window.pywebview.api.generate(files.map(f => f.path));
-
     btn.disabled = false;
     btn.textContent = 'Generate Tracksheets';
-
     if (result.errors && result.errors.length) {
-      showToast(result.errors.join(', '), 'error');
+      showSnackbar(result.errors.join(', '), true);
     } else {
-      showToast(`Generated ${result.count} tracksheet(s)`, 'success');
+      showSnackbar(`Generated ${result.count} tracksheet(s)`);
     }
   }
 
