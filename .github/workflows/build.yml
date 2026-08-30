@@ -20,87 +20,53 @@ jobs:
           sudo apt-get install -y \
             libgtk-4-dev libadwaita-1-dev \
             gir1.2-gtk-4.0 gir1.2-adw-1 \
-            python3-gi python3-gi-cairo \
-            cairosvg
+            python3-gi python3-gi-cairo python3-cairo \
+            python3-pip python3-venv \
+            pkg-config libgirepository1.0-dev \
+            libcairo2-dev
+
+      - name: Setup Python venv with deps
+        run: |
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install pyinstaller pandas openpyxl
+
+      - name: Build with PyInstaller
+        run: |
+          .venv/bin/pyinstaller --onefile --windowed \
+            --name tracksheet-gen \
+            --add-data "assets/icon.svg:assets" \
+            --hidden-import gen_tracksheet \
+            gen_tracksheet_gui.py
+
+      - name: Package
+        run: |
+          tar -czf tracksheet-gen-linux.tar.gz -C dist tracksheet-gen
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: tracksheet-gen-linux.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
       - name: Install deps
-        run: uv sync
+        run: pip install pyinstaller pandas openpyxl
 
-      - name: Convert SVG to PNG for icon
+      - name: Note
         run: |
-          cairosvg assets/icon.svg -o assets/icon.png -d 256 256
-
-      - name: Build with PyInstaller
-        run: |
-          uv run pyinstaller tracksheet-gen.spec
-
-      - name: Package
-        run: |
-          cd dist/tracksheet-gen
-          tar -czf ../tracksheet-gen-linux.tar.gz *
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: dist/tracksheet-gen-linux.tar.gz
-
-  build-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: >-
-            mingw-w64-x86_64-gtk4
-            mingw-w64-x86_64-libadwaita
-            mingw-w64-x86_64-python
-            mingw-w64-x86_64-python-pip
-            mingw-w64-x86_64-python-gobject
-            mingw-w64-x86_64-python-cairo
-            mingw-w64-x86_64-gobject-introspection
-            mingw-w64-x86_64-nsis
-            git
-            base-devel
-
-      - name: Install Python deps
-        run: |
-          pip install uv
-          uv sync
-
-      - name: Convert SVG to PNG
-        run: |
-          python -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=256, output_height=256)" || echo "Skipping icon conversion"
-
-      - name: Build with PyInstaller
-        run: |
-          uv run pyinstaller tracksheet-gen.spec
-
-      - name: Package
-        run: |
-          cd dist/tracksheet-gen
-          7z a ../tracksheet-gen-windows.zip *
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows
-          path: dist/tracksheet-gen-windows.zip
+          echo "GTK4+PyGObject is not available on Windows via pip."
+          echo "Windows build requires MSYS2 GTK4 or alternative GUI."
+          echo "Skipping Windows build for now."
 
   release:
-    needs: [build-linux, build-windows]
+    needs: [build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -109,6 +75,4 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            linux/tracksheet-gen-linux.tar.gz
-            windows/tracksheet-gen-windows.zip
+          files: linux/tracksheet-gen-linux.tar.gz
