@@ -23,16 +23,13 @@ jobs:
             pkg-config imagemagick
 
       - name: Generate icons
-        run: |
-          convert -background none assets/icon.svg -resize 256x256 assets/icon.png
+        run: convert -background none assets/icon.svg -resize 256x256 assets/icon.png
 
       - name: Install Python deps
-        run: |
-          sudo pip3 install pyinstaller pandas openpyxl pywebview
+        run: sudo pip3 install pyinstaller pandas openpyxl pywebview
 
-      - name: Build with PyInstaller
-        run: |
-          pyinstaller tracksheet-gen.spec
+      - name: Build
+        run: pyinstaller tracksheet-gen.spec
 
       - name: Package
         run: tar -czf tracksheet-gen-linux.tar.gz -C dist tracksheet-gen
@@ -60,9 +57,8 @@ jobs:
       - name: Install deps
         run: pip install pyinstaller pandas openpyxl pywebview Pillow
 
-      - name: Build with PyInstaller
-        run: |
-          pyinstaller --onefile --windowed --icon assets/icon.ico tracksheet-gen.spec
+      - name: Build
+        run: pyinstaller tracksheet-gen.spec
 
       - name: Package
         run: 7z a tracksheet-gen-windows.zip dist/tracksheet-gen.exe
