@@ -26,14 +26,13 @@ jobs:
         run: |
           convert -background none assets/icon.svg -resize 256x256 assets/icon.png
 
-      - name: Setup venv
+      - name: Install Python deps
         run: |
-          python3 -m venv .venv
-          .venv/bin/pip install pyinstaller pandas openpyxl pywebview
+          sudo pip3 install pyinstaller pandas openpyxl pywebview
 
       - name: Build with PyInstaller
         run: |
-          .venv/bin/pyinstaller --onefile --windowed \
+          pyinstaller --onefile --windowed \
             --name tracksheet-gen \
             --add-data "assets/index.html:assets" \
             --add-data "assets/icon.png:assets" \
