@@ -20,7 +20,11 @@ jobs:
           sudo apt-get install -y \
             python3-pip python3-venv python3-dev \
             libwebkit2gtk-4.1-dev \
-            pkg-config
+            pkg-config imagemagick
+
+      - name: Generate icons
+        run: |
+          convert -background none assets/icon.svg -resize 256x256 assets/icon.png
 
       - name: Setup venv
         run: |
@@ -32,7 +36,7 @@ jobs:
           .venv/bin/pyinstaller --onefile --windowed \
             --name tracksheet-gen \
             --add-data "assets/index.html:assets" \
-            --add-data "assets/icon.svg:assets" \
+            --add-data "assets/icon.png:assets" \
             --hidden-import gen_tracksheet \
             gen_tracksheet_gui.py
 
@@ -53,15 +57,22 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Generate icons
+        run: |
+          pip install cairosvg Pillow
+          python -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=256, output_height=256)"
+          python -c "from PIL import Image; img=Image.open('assets/icon.png'); img.save('assets/icon.ico', format='ICO', sizes=[(256,256),(128,128),(64,64),(48,48),(32,32),(16,16)])"
+
       - name: Install deps
-        run: pip install pyinstaller pandas openpyxl pywebview
+        run: pip install pyinstaller pandas openpyxl pywebview Pillow
 
       - name: Build with PyInstaller
         run: |
           pyinstaller --onefile --windowed `
             --name tracksheet-gen `
+            --icon assets/icon.ico `
             --add-data "assets/index.html;assets" `
-            --add-data "assets/icon.svg;assets" `
+            --add-data "assets/icon.png;assets" `
             --hidden-import gen_tracksheet `
             gen_tracksheet_gui.py
 
@@ -82,6 +93,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Generate icons
+        run: |
+          pip install cairosvg
+          python -c "import cairosvg; cairosvg.svg2png(url='assets/icon.svg', write_to='assets/icon.png', output_width=256, output_height=256)"
+          sips -s format icns assets/icon.png --out assets/icon.icns
+
       - name: Install deps
         run: pip install pyinstaller pandas openpyxl pywebview pyobjc
 
@@ -89,8 +106,9 @@ jobs:
         run: |
           pyinstaller --onefile --windowed \
             --name tracksheet-gen \
+            --icon assets/icon.icns \
             --add-data "assets/index.html:assets" \
-            --add-data "assets/icon.svg:assets" \
+            --add-data "assets/icon.png:assets" \
             --hidden-import gen_tracksheet \
             gen_tracksheet_gui.py
 
